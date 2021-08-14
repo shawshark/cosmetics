@@ -3,7 +3,6 @@ package net.shawshark.core.plugin.minigame.cosmetics.settings.pirates;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
-import scala.Int;
 
 import java.util.HashMap;
 import java.util.List;

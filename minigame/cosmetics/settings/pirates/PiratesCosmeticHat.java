@@ -58,6 +58,11 @@ public enum PiratesCosmeticHat implements Cosmetic {
     }
 
     @Override
+    public String getDisplayName(boolean extra, String text) {
+        return getDisplayName() + (extra ? text : "");
+    }
+
+    @Override
     public String getSkinValue() {
         return getTexture();
     }
@@ -74,13 +79,13 @@ public enum PiratesCosmeticHat implements Cosmetic {
 
     @Override
     public boolean hasPurchaseID(PiratesCosmeticsPlayer playerSettings, int id) {
-        PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(PiratesCosmeticsType.HATS);
+        PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(getType());
         return settings.getPurchased().contains(id);
     }
 
     @Override
     public int activeID(PiratesCosmeticsPlayer playerSettings) {
-        PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(PiratesCosmeticsType.HATS);
+        PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(getType());
         return settings.getActiveID();
     }
 
@@ -112,7 +117,7 @@ public enum PiratesCosmeticHat implements Cosmetic {
     @Override
     public void addPurchase(PiratesCosmeticsPlayer playerSettings) {
 
-        PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(PiratesCosmeticsType.HATS);
+        PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(getType());
         settings.setActiveID(getId());
         //playerSettings.setActiveHatID(getId());
         if(getId() != -1) {

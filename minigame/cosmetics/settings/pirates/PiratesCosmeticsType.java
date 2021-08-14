@@ -6,7 +6,7 @@ import org.bukkit.Material;
 
 public enum PiratesCosmeticsType {
 
-    BALLOONS(1, 13, "&aBalloons", PiratesCosmeticHat.values(), null, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTJkZDExZGEwNDI1MmY3NmI2OTM0YmMyNjYxMmY1NGYyNjRmMzBlZWQ3NGRmODk5NDEyMDllMTkxYmViYzBhMiJ9fX0="),
+    BALLOONS(1, 13, "&aBalloons", PiratesCosmeticBalloons.values(), null, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTJkZDExZGEwNDI1MmY3NmI2OTM0YmMyNjYxMmY1NGYyNjRmMzBlZWQ3NGRmODk5NDEyMDllMTkxYmViYzBhMiJ9fX0="),
     HIT_PARTICLES(2, 21, "&cHit Particles", PiratesCosmeticHat.values(), Material.LEATHER_CHESTPLATE, null),
     SHOOTING_TRAILS(3,22, "&bShooting Trails", PiratesCosmeticHat.values(), Material.BLAZE_POWDER, null),
     KILL_PARTICLES(4,23, "&1Kill Particles", PiratesCosmeticHat.values(), Material.IRON_SWORD, null),

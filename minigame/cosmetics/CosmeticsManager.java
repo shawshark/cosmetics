@@ -70,12 +70,12 @@ public class CosmeticsManager extends AbstractModule {
                 int[] availableSlots = cos.getAvailableSlots();
                 String displayName;
                 if(cos.hasPurchaseID(piratesSettings, cos.id())) {
-                    displayName = cos.getDisplayName();
+                    displayName = cos.getDisplayName(false, "");
                 } else {
                     if(cos.id() != -1) {
-                        displayName = cos.getDisplayName() + " &7- &e" + cos.price() + " Coins";
+                        displayName = cos.getDisplayName(false, "") + " &7- &e" + cos.price() + " Coins";
                     } else {
-                        displayName = cos.getDisplayName(); // don't show coins for the disable icon
+                        displayName = cos.getDisplayName(false, ""); // don't show coins for the disable icon
                     }
                 }
 

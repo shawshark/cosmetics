@@ -52,6 +52,11 @@ public enum PiratesKillMessages  implements Cosmetic {
     }
 
     @Override
+    public String getDisplayName(boolean extra, String text) {
+        return getDisplayName() + (this == DEFAULT ? " &8(Free)" : "") + (extra ? text : "");
+    }
+
+    @Override
     public String getSkinValue() {
         return null;
     }

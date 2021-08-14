@@ -18,7 +18,7 @@ public interface Cosmetic {
 
     int price();
     int id();
-    String getDisplayName();
+    String getDisplayName(boolean extra, String text);
     String getSkinValue();
 
     boolean isHeadIcon();
@@ -71,7 +71,7 @@ public interface Cosmetic {
         addPurchase(playerSettings);
 
         if(id() != -1) {
-            PluginUtils.sendMessage(player, "&aYou have purchased " + getDisplayName() + " &aCosmetic!");
+            PluginUtils.sendMessage(player, "&aYou have purchased " + getDisplayName(false, "") + " &aCosmetic!");
         } else {
             PluginUtils.sendMessage(player, "&cYou have disabled your " + getBaseName() + " cosmetic!");
         }
