@@ -68,18 +68,12 @@ public class PiratesSettings extends AbstractCosmetics {
             }
 
             if(activeID != -1) {
-
-                switch(dataType) {
-                    case HATS:
-                        getCosmeticsPlayer().setActiveHatID(activeID);
-
-                        if(purchasedID.length() > 0) {
-                            List<Integer> purchased = Arrays.stream(purchasedID.split(","))
-                                    .map(id -> Integer.parseInt(id))
-                                    .collect(Collectors.toList());
-                            getCosmeticsPlayer().setPurchasedHats(purchased);
-                        }
-                        break;
+                getCosmeticsPlayer().getSettings(dataType).setActiveID(activeID);
+                if(purchasedID.length() > 0) {
+                    List<Integer> purchased = Arrays.stream(purchasedID.split(","))
+                            .map(id -> Integer.parseInt(id))
+                            .collect(Collectors.toList());
+                    getCosmeticsPlayer().getSettings(dataType).setPurchased(purchased);
                 }
             }
         }, col.toArray(new DataTable[col.size()]));
@@ -95,20 +89,13 @@ public class PiratesSettings extends AbstractCosmetics {
         String purchaseID = "";
 
         PiratesCosmeticsType dataType = (PiratesCosmeticsType) type;
-        switch(dataType) {
-            case HATS:
-                activeID = getCosmeticsPlayer().getActiveHatID();
-                if(getCosmeticsPlayer().getPurchasedHats().isEmpty()) {
-                    purchaseID = "";
-                } else {
-                    purchaseID = Strings.join(getCosmeticsPlayer().getPurchasedHats()
-                            .stream()
-                            .map(id -> String.valueOf(id))
-                            .collect(Collectors.toList()), ",");
-                }
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + dataType.getTableName());
+        PiratesCosmeticsPlayer.Settings settings = getCosmeticsPlayer().getSettings(dataType);
+        activeID = settings.getActiveID();
+        if(!settings.getPurchased().isEmpty()) {
+            purchaseID = Strings.join(settings.getPurchased()
+                    .stream()
+                    .map(id -> String.valueOf(id))
+                    .collect(Collectors.toList()), ",");
         }
 
         DataTable uuid = new DataTable("UUID", getCorePlayer().getPlayerUUID().toString().replace("_", ""), DataTable.DataType.STRING);
