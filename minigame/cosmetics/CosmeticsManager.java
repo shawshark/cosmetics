@@ -12,10 +12,13 @@ import net.shawshark.core.plugin.minigame.MinigameTypes;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.Cosmetic;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.pirates.PiratesCosmeticsPlayer;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.pirates.PiratesCosmeticsType;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CosmeticsManager extends AbstractModule {
@@ -26,6 +29,7 @@ public class CosmeticsManager extends AbstractModule {
 
     @Override
     protected void onEnable() {
+
         log(true, "init -> Cosmetics manager");
     }
 
@@ -49,7 +53,19 @@ public class CosmeticsManager extends AbstractModule {
         }
     }
 
+    private List<UUID> cooldown = new ArrayList<>();
+
+    public Icon getCloseItem() {
+        Icon close = new Icon(ItemUtils.createItem("&cClose", 1, Material.BARRIER, null));
+        close.addClickAction((player1, clickType) -> player1.closeInventory());
+        return close;
+    }
+
     public void openPiratesCosmetics(Player player, PiratesCosmeticsPlayer piratesSettings) {
+        if(cooldown.contains(player.getUniqueId())) return;
+        cooldown.add(player.getUniqueId());
+        Bukkit.getScheduler().runTaskLater(getPlugin(), () -> cooldown.remove(player.getUniqueId()), 12);
+
         Preconditions.checkNotNull(piratesSettings, "piratesSettings cannot be null (" + player.getName() + ")");
         ChestGUIPages gui = new ChestGUIPages();
 
@@ -60,14 +76,18 @@ public class CosmeticsManager extends AbstractModule {
         close.addClickAction((player1, clickType) -> player1.closeInventory());
         main.setIcon(((6*9) - 1), close);
 
+        List<Cosmetic> completedCosmetics = new ArrayList<>();
+
         for(PiratesCosmeticsType menuData : PiratesCosmeticsType.values()) {
             ChestGUI cosmetic = new ChestGUI(menuData.getDisplayName(), 6);
             inputBorder(6, Material.GRAY_STAINED_GLASS_PANE, cosmetic);
 
             Cosmetic[] c = menuData.getCosmetic();
+
             int id = 0;
             for(Cosmetic cos : c) {
-                int[] availableSlots = cos.getAvailableSlots();
+                int[] availableSlots = cos.getAvailableSlots(0);
+
                 String displayName;
                 if(cos.hasPurchaseID(piratesSettings, cos.id())) {
                     displayName = cos.getDisplayName(false, "");
@@ -89,13 +109,38 @@ public class CosmeticsManager extends AbstractModule {
 
                 Icon icon = new Icon(item);
                 icon.addClickAction((player12, clickType) -> {
+
+                    if(cos.isPreviewCosmetic()) {
+                        System.out.println("Clicktype = " + clickType.toString());
+                       if(clickType == ClickType.RIGHT && cos.id() != -1) {
+                           if(cos.getPreviewType() == CosmeticPreviewType.SOUND) {
+                               //preview sound for player
+                               PluginUtils.sendMessage(player, "&ePreviewing sound cosmetic " + cos.getDisplayName(false, null));
+                               if(cos instanceof CosmeticSound) {
+                                   CosmeticSound cosmeticSound = (CosmeticSound) cos;
+                                   player.playSound(player.getLocation(), cosmeticSound.getSound(), 3, 2);
+                               } else {
+                                   log(true, "Failed to preview sound for player " + player.getName() + " cos isnt an instance of CosmeticSound?");
+                               }
+                           }
+                           return;
+                       }
+                    }
+
                     cos.attemptPurchase(piratesSettings, player, true, MinigameTypes.PIRATES);
                 });
                 icon.setUpdateLoreListener(() -> cos.getUpdatedLore(piratesSettings)
                         .stream()
                         .map(PluginUtils::format)
                         .collect(Collectors.toList()));
-                cosmetic.setIcon(availableSlots[id++], icon); // always plus (+1) as disabled item is -1
+
+                try {
+                    cosmetic.setIcon(availableSlots[id++], icon);
+                } catch(ArrayIndexOutOfBoundsException e) {
+                    System.out.println("array out of bounds for cosmetic: " + menuData.toString() + ", cosmetic type: " + cos.toString());
+                    break;
+                }
+                completedCosmetics.add(cos);
             }
 
             // usually 45 (far bottom left corner

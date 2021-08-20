@@ -1,10 +1,9 @@
 package net.shawshark.core.plugin.minigame.cosmetics.settings;
 
-import lombok.Getter;
 import net.shawshark.core.internal.PluginUtils;
 import net.shawshark.core.plugin.database.MinigameCurrency;
-import net.shawshark.core.plugin.inventory.UpdateLoreListener;
 import net.shawshark.core.plugin.minigame.MinigameTypes;
+import net.shawshark.core.plugin.minigame.cosmetics.CosmeticPreviewType;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.pirates.PiratesCosmeticsPlayer;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.pirates.PiratesCosmeticsType;
 import org.bukkit.Material;
@@ -27,7 +26,10 @@ public interface Cosmetic {
     boolean hasPurchaseID(PiratesCosmeticsPlayer playerSettings, int id);
     int activeID(PiratesCosmeticsPlayer playerSettings);
 
-    int[] getAvailableSlots();
+    int[] getAvailableSlots(int index);
+
+    boolean isPreviewCosmetic();
+    CosmeticPreviewType getPreviewType();
 
     default Material getMaterial() {
         if(isHeadIcon()) return Material.GLASS;
@@ -50,16 +52,27 @@ public interface Cosmetic {
 
         // player is attempting to purchase a cosmetic
         // they have got that equipped. just return here. DO nothing
-        if(id() == activeID(playerSettings)) return;
+        if (id() == activeID(playerSettings)) return;
 
-        if(price() > 0) {
+        if (id() != -1) {
+            if (closeMenu) {
+                player.closeInventory();
+            }
+        }
+
+        if (playerSettings.getSettings(getType()).getPurchased().contains(id())) {
+            addPurchase(playerSettings);
+            PluginUtils.sendMessage(player, "&2Cosmetics &f• &aYou have selected " + getDisplayName(false, "") + " &a" + getBaseName() + " Cosmetic!");
+            return;
+        } else if (id() == -1) {
+            addPurchase(playerSettings);
+            PluginUtils.sendMessage(player, "&2Cosmetics &f• &cYou have disabled your " + getBaseName() + " Cosmetic!");
+            return;
+        }
+
+        if (price() > 0) {
             MinigameCurrency balance = playerSettings.getSettings().getCorePlayer().getBalances().get(minigameType);
-
-            if(balance.getBalance() < price()) {
-                if(closeMenu) {
-                    player.closeInventory();
-                }
-
+            if (balance.getBalance() < price()) {
                 PluginUtils.sendMessage(player, "&cYou don't have enough coins to purchase this cosmetic!");
                 return;
             }
@@ -69,11 +82,6 @@ public interface Cosmetic {
         }
 
         addPurchase(playerSettings);
-
-        if(id() != -1) {
-            PluginUtils.sendMessage(player, "&aYou have purchased " + getDisplayName(false, "") + " &aCosmetic!");
-        } else {
-            PluginUtils.sendMessage(player, "&cYou have disabled your " + getBaseName() + " cosmetic!");
-        }
+        PluginUtils.sendMessage(player, "&2Cosmetics &f• &aYou have purchased " + getDisplayName(false, "") + " &a" + getBaseName() + " Cosmetic!");
     }
 }

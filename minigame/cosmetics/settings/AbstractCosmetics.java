@@ -38,10 +38,9 @@ public abstract class AbstractCosmetics {
         StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS `" + getTableName(type.getTableName()) + "`" +
                 "(");
         sb.append(" `UUID` varchar(100) NOT NULL,");
-        sb.append(" `playerName` varchar(30) NOT NULL,");
 
-        sb.append(" `" + type + "_active_id` INTEGER NOT NULL,");
-        sb.append(" `" + type + "_purchased_ids` LONGTEXT NOT NULL,");
+        sb.append(" `active_id` INTEGER NOT NULL,");
+        sb.append(" `purchased_ids` LONGTEXT NOT NULL,");
 
         sb.append(" UNIQUE KEY `UUID` (`UUID`)");
         sb.append(") ENGINE=InnoDB DEFAULT CHARSET=latin1;");

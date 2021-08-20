@@ -1,6 +1,7 @@
 package net.shawshark.core.plugin.minigame.cosmetics.settings.pirates;
 
 import lombok.Getter;
+import net.shawshark.core.plugin.minigame.cosmetics.CosmeticPreviewType;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.Cosmetic;
 
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public enum PiratesCosmeticBalloons implements Cosmetic {
 
     @Override
     public String getBaseName() {
-        return null;
+        return "Balloon";
     }
 
     @Override
@@ -84,9 +85,19 @@ public enum PiratesCosmeticBalloons implements Cosmetic {
     }
 
     @Override
-    public int[] getAvailableSlots() {
+    public int[] getAvailableSlots(int index) {
         int array[] = new int[]{11, 12, 13, 14, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 39, 40, 41};
         return array;
+    }
+
+    @Override
+    public boolean isPreviewCosmetic() {
+        return false;
+    }
+
+    @Override
+    public CosmeticPreviewType getPreviewType() {
+        return CosmeticPreviewType.NONE;
     }
 
     @Override
@@ -98,10 +109,10 @@ public enum PiratesCosmeticBalloons implements Cosmetic {
     public List<String> getUpdatedLore(PiratesCosmeticsPlayer playerSettings) {
         PiratesCosmeticsPlayer.Settings settings = playerSettings.getSettings(getType());
 
-        if(this == DEFAULT && settings.getActiveID() != -1 || settings.getPurchased().contains(getId())) {
-            return Arrays.asList("", "&aClick to select");
-        } else if(this == DEFAULT && settings.getActiveID() == -1 || settings.getActiveID() == getId()) {
+        if(getId() == settings.getActiveID()) {
             return Arrays.asList("", "&cAlready equipped");
+        } else if(this == DEFAULT || settings.getPurchased().contains(getId())) {
+            return Arrays.asList("", "&aClick to select");
         } else {
             return Arrays.asList("", "&7Click to purchase");
         }

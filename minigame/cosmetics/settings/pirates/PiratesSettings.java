@@ -8,21 +8,26 @@ import net.shawshark.core.plugin.database.SqlInputType;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.AbstractCosmetics;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PiratesSettings extends AbstractCosmetics {
 
     @Getter private PiratesCosmeticsPlayer cosmeticsPlayer;
+    @Getter private boolean setupDatabase = false;
 
     public PiratesSettings(CorePlayer corePlayer) {
         super(corePlayer);
         this.cosmeticsPlayer = new PiratesCosmeticsPlayer(this);
 
-        // Setup each datatype
-        for(PiratesCosmeticsType type : PiratesCosmeticsType.values()) {
-            if(type != null)
-                getDatabaseManager().runSqlCommandLine(getCreateTableQuery(type), null);
+        if(!isSetupDatabase()) {
+            // Setup each datatype
+            for(PiratesCosmeticsType type : PiratesCosmeticsType.values()) {
+                if(type != null)
+                    getDatabaseManager().runSqlCommandLine(getCreateTableQuery(type), null);
+            }
+            setupDatabase = true;
         }
         // load each type
         for(PiratesCosmeticsType type : PiratesCosmeticsType.values()) {
@@ -48,10 +53,12 @@ public class PiratesSettings extends AbstractCosmetics {
         String query = "SELECT * FROM " + tableName + " WHERE UUID = '" + key + "';";
 
         DataTable uuid = new DataTable("UUID", "", DataTable.DataType.STRING);
-        DataTable activeTypeID = new DataTable(tableName + "_active_id", "", DataTable.DataType.INTEGER);
-        DataTable purchasedIDS = new DataTable(tableName + "_purchased_ids", "", DataTable.DataType.LONGTEXT);
+        DataTable activeTypeID = new DataTable("active_id", "", DataTable.DataType.INTEGER);
+        DataTable purchasedIDS = new DataTable("purchased_ids", "", DataTable.DataType.LONGTEXT);
 
         List<DataTable> col = Arrays.asList(uuid, activeTypeID, purchasedIDS);
+
+        System.out.println("before getData from Load() dataType = " + dataType);
 
         getDatabaseManager().getData("UUID", query, response -> {
             int activeID = -1;
@@ -59,22 +66,24 @@ public class PiratesSettings extends AbstractCosmetics {
 
             if(response.containsKey(key) && response.get(key).size() > 0) {
                 for(DataTable ta : response.get(key)) {
-                    if(ta.getName().equalsIgnoreCase(dataType.getTableName() + "_active_id")) {
+                    if(ta.getName().equalsIgnoreCase("active_id")) {
                         activeID = (Integer) ta.getData();
-                    } else if(ta.getName().equalsIgnoreCase(dataType.getTableName() + "_purchased_ids")) {
+                    } else if(ta.getName().equalsIgnoreCase("purchased_ids")) {
                         purchasedID = (String) ta.getData();
+                        System.out.println(dataType.toString() + ": purchaseID: " + purchasedID);
                     }
                 }
             }
 
             if(activeID != -1) {
                 getCosmeticsPlayer().getSettings(dataType).setActiveID(activeID);
-                if(purchasedID.length() > 0) {
-                    List<Integer> purchased = Arrays.stream(purchasedID.split(","))
-                            .map(id -> Integer.parseInt(id))
-                            .collect(Collectors.toList());
-                    getCosmeticsPlayer().getSettings(dataType).setPurchased(purchased);
-                }
+            }
+            if(purchasedID.length() > 0) {
+                List<Integer> purchased = Arrays.stream(purchasedID.split(","))
+                        .map(id -> Integer.parseInt(id))
+                        .collect(Collectors.toList());
+                System.out.println("printing array: " + purchased);
+                getCosmeticsPlayer().getSettings(dataType).setPurchased(purchased);
             }
         }, col.toArray(new DataTable[col.size()]));
     }
@@ -92,15 +101,15 @@ public class PiratesSettings extends AbstractCosmetics {
         PiratesCosmeticsPlayer.Settings settings = getCosmeticsPlayer().getSettings(dataType);
         activeID = settings.getActiveID();
         if(!settings.getPurchased().isEmpty()) {
-            purchaseID = Strings.join(settings.getPurchased()
+            purchaseID = join(settings.getPurchased()
                     .stream()
                     .map(id -> String.valueOf(id))
                     .collect(Collectors.toList()), ",");
         }
 
-        DataTable uuid = new DataTable("UUID", getCorePlayer().getPlayerUUID().toString().replace("_", ""), DataTable.DataType.STRING);
-        DataTable activeTypeID = new DataTable(dataType.getTableName() + "_active_id", activeID, DataTable.DataType.INTEGER);
-        DataTable purchasedHatIDS = new DataTable(dataType.getTableName() + "_purchased_ids", purchaseID, DataTable.DataType.LONGTEXT);
+        DataTable uuid = new DataTable("UUID", getCorePlayer().getPlayerUUID().toString().replace("-", ""), DataTable.DataType.STRING);
+        DataTable activeTypeID = new DataTable("active_id", activeID, DataTable.DataType.INTEGER);
+        DataTable purchasedHatIDS = new DataTable("purchased_ids", purchaseID, DataTable.DataType.LONGTEXT);
 
         getDatabaseManager().insertData(SqlInputType.REPLACE_INTO, getTableName(dataType.getTableName()),
                 Arrays.asList(uuid, activeTypeID, purchasedHatIDS), response -> {
@@ -108,5 +117,18 @@ public class PiratesSettings extends AbstractCosmetics {
             log(false, (response == -1 ? "Failed to save " : "Saved ") +
                     dataType.getTableName() + " cosmetics for core player " + getCorePlayer().getName());
         });
+    }
+
+    public static String join( Iterable<String> pieces, String separator ) {
+        StringBuilder buffer = new StringBuilder();
+
+        for (Iterator<String> iter = pieces.iterator(); iter.hasNext(); ) {
+            buffer.append( iter.next() );
+
+            if ( iter.hasNext() )
+                buffer.append( separator );
+        }
+
+        return buffer.toString();
     }
 }

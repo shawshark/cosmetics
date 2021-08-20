@@ -1,6 +1,7 @@
 package net.shawshark.core.plugin.minigame.cosmetics.settings.pirates;
 
 import lombok.Getter;
+import net.shawshark.core.plugin.minigame.cosmetics.CosmeticPreviewType;
 import net.shawshark.core.plugin.minigame.cosmetics.settings.Cosmetic;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public enum PiratesKillMessages  implements Cosmetic {
     BETTER_STAY_HOME(9, "&9Better stay Home", "&6(Player) &fmet &c(Killer) &fand died", 4500),
     THE_STRONGEST(10, "&cThe Strongest", "&6(Player) &fwas killed by &c(Killer)&f's amazing powers", 4000),
     CONFUSED(11, "&eConfused?", "&6(Player) &fgot bamboozled by &c(Killer)", 2000),
-    NICE_TRY(12, "&dNice Try", "&6(Player) &ffought &c(Killer) &fand lost", 250),
+    NICE_TRY(12, "&dNice Try", "&6(Player) &ffought &c(Killer) &fand lost", 700),
     LOSERS_TAKE_THE_LS(13, "&1Losers take the L's", "&6(Player) &ftook the L's from &c(Killer)", 5000);
 
 
@@ -86,9 +87,19 @@ public enum PiratesKillMessages  implements Cosmetic {
     }
 
     @Override
-    public int[] getAvailableSlots() {
+    public int[] getAvailableSlots(int index) {
         int array[] = new int[]{13, 19, 20, 21, 22, 23, 24,25,28,29,30,31,32,33,34};
         return array;
+    }
+
+    @Override
+    public boolean isPreviewCosmetic() {
+        return false;
+    }
+
+    @Override
+    public CosmeticPreviewType getPreviewType() {
+        return CosmeticPreviewType.NONE;
     }
 
     @Override
@@ -107,6 +118,7 @@ public enum PiratesKillMessages  implements Cosmetic {
         lore.add("&8--");
         lore.add(" ");
 
+        /*
         if(this == DEFAULT && settings.getActiveID() != -1 || settings.getPurchased().contains(getId())) {
             //return Arrays.asList("", );
             lore.add("&aClick to select");
@@ -116,7 +128,19 @@ public enum PiratesKillMessages  implements Cosmetic {
         } else {
             //return Arrays.asList("", );
             lore.add("&7Click to purchase");
+        }*/
+
+        if(getId() == settings.getActiveID()) {
+            //return Arrays.asList("", "&cAlready equipped");
+            lore.add("&cAlready equipped");
+        } else if(this == DEFAULT || settings.getPurchased().contains(getId())) {
+            //return Arrays.asList("", "&aClick to select");
+            lore.add("&aClick to select");
+        } else {
+            //return Arrays.asList("", "&7Click to purchase");
+            lore.add("&7Click to purchase");
         }
+
         return lore;
     }
 
